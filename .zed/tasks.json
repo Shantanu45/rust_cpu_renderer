@@ -1,0 +1,38 @@
+[
+  {
+    "label": "cargo run",
+    "command": "cargo",
+    "args": ["run"],
+    "save": "all"
+  },
+  {
+    "label": "cargo check",
+    "command": "cargo",
+    "args": ["check"],
+    "save": "all"
+  },
+  {
+    "label": "cargo test",
+    "command": "cargo",
+    "args": ["test"],
+    "save": "all"
+  },
+  {
+    "label": "cargo clippy",
+    "command": "cargo",
+    "args": ["clippy", "--all-targets"],
+    "save": "all"
+  },
+  {
+    "label": "cargo fmt",
+    "command": "cargo",
+    "args": ["fmt"],
+    "save": "all"
+  },
+  {
+    "label": "cargo build --release",
+    "command": "cargo",
+    "args": ["build", "--release"],
+    "save": "all"
+  }
+]
