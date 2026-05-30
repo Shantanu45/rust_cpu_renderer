@@ -45,7 +45,7 @@ pub fn draw_triangle(
     draw_line(framebuffer, point_03, point_01, color);
 }
 
-pub fn draw_quad(
+pub fn draw_four_connected_lines(
     framebuffer: &mut Framebuffer,
     p1: Vec2i,
     p2: Vec2i,
@@ -59,7 +59,7 @@ pub fn draw_quad(
     draw_line(framebuffer, p4, p1, color);
 }
 
-pub fn draw_quad2(
+pub fn draw_quad(
     framebuffer: &mut Framebuffer,
     top_left: Vec2i,
     bottom_right: Vec2i,
@@ -81,8 +81,5 @@ pub fn draw_quad2(
         x: top_left.x,
         y: bottom_right.y,
     };
-    draw_line(framebuffer, p1, p2, color);
-    draw_line(framebuffer, p2, p3, color);
-    draw_line(framebuffer, p3, p4, color);
-    draw_line(framebuffer, p4, p1, color);
+    draw_four_connected_lines(framebuffer, p1, p2, p3, p4, color);
 }

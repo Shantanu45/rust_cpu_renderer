@@ -26,8 +26,8 @@ impl Renderer {
         raster::draw_triangle(&mut self.framebuffer, p1, p2, p3, color);
     }
 
-    pub fn draw_quad(&mut self, p1: Vec2i, p2: Vec2i, p3: Vec2i, p4: Vec2i, color: Color) {
-        raster::draw_quad(&mut self.framebuffer, p1, p2, p3, p4, color);
+    pub fn draw_quad(&mut self, top_left: Vec2i, bottom_right: Vec2i, color: Color) {
+        raster::draw_quad(&mut self.framebuffer, top_left, bottom_right, color);
     }
 
     pub fn buffer(&self) -> &[u32] {
