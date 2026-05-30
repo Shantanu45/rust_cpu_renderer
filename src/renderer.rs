@@ -22,6 +22,14 @@ impl Renderer {
         raster::draw_line(&mut self.framebuffer, start, end, color);
     }
 
+    pub fn draw_triangle(&mut self, p1: Vec2i, p2: Vec2i, p3: Vec2i, color: Color) {
+        raster::draw_triangle(&mut self.framebuffer, p1, p2, p3, color);
+    }
+
+    pub fn draw_quad(&mut self, p1: Vec2i, p2: Vec2i, p3: Vec2i, p4: Vec2i, color: Color) {
+        raster::draw_quad(&mut self.framebuffer, p1, p2, p3, p4, color);
+    }
+
     pub fn buffer(&self) -> &[u32] {
         self.framebuffer.color_buffer()
     }
