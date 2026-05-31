@@ -1,6 +1,6 @@
 use minifb::{Window, WindowOptions};
 
-use software_renderer::app::{App, AppCommand};
+use rust_renderer::app::{App, AppCommand};
 
 const W: u32 = 800;
 const H: u32 = 600;
