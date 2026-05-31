@@ -1,3 +1,5 @@
+use std::ops::AddAssign;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Vec2i {
     pub x: i32,
@@ -7,6 +9,15 @@ pub struct Vec2i {
 impl Vec2i {
     pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
+    }
+}
+
+impl AddAssign for Vec2i {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        };
     }
 }
 

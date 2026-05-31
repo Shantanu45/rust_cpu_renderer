@@ -4,6 +4,26 @@ use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
 
+struct Ball {
+    pos: Vec2i,
+    speed: i32,
+    size: u32,
+}
+
+impl Ball {
+    fn new(size: u32) -> Self {
+        Self {
+            pos: Vec2i { x: 0, y: 0 },
+            speed: 0,
+            size: size,
+        }
+    }
+
+    fn move_ball(&mut self, offset: Vec2i) {
+        self.pos += offset;
+    }
+}
+
 struct Paddle {
     pos: Vec2i,
     width: u32,
@@ -43,6 +63,7 @@ pub struct Pong {
     left_score: u32,
     right_score: u32,
     paddles: [Paddle; 2],
+    ball: Ball,
     controllers: [PaddleController; 2],
 }
 
@@ -59,6 +80,7 @@ impl Pong {
                 Paddle::new(Vec2i::new(16, 0), 12, 80),
                 Paddle::new(Vec2i::new(772, 0), 12, 80),
             ],
+            ball: Ball::new(10),
             controllers: Self::controllers_for_mode(mode),
         }
     }
@@ -85,6 +107,7 @@ impl Game for Pong {
     }
 
     fn render(&self, renderer: &mut Renderer) {
+        self.draw_ball(renderer, &self.ball);
         for paddle in &self.paddles {
             self.draw_paddle(renderer, paddle);
         }
@@ -153,5 +176,11 @@ impl Pong {
         );
 
         renderer.draw_quad(paddle.pos, end, Color::RED);
+    }
+
+    fn draw_ball(&self, renderer: &mut Renderer, ball: &Ball) {
+        let end = Vec2i::new(ball.pos.x + ball.size as i32, ball.pos.y + ball.size as i32);
+
+        renderer.draw_quad(ball.pos, end, Color::WHITE);
     }
 }
