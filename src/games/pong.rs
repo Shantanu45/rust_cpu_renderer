@@ -1,3 +1,5 @@
+use std::alloc::handle_alloc_error;
+
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
@@ -8,11 +10,17 @@ struct Paddle {
     pos: Vec2i,
     width: u32,
     height: u32,
+    velocity: i32,
 }
 
 impl Paddle {
     fn new(pos: Vec2i, width: u32, height: u32) -> Self {
-        Self { pos, width, height }
+        Self {
+            pos,
+            width,
+            height,
+            velocity: 1,
+        }
     }
 
     fn move_paddle(&mut self, offset: i32) {
@@ -51,7 +59,7 @@ impl Game for Pong {
     }
 
     fn update(&mut self, _input: &Input, _dt: f32, _ctx: &GameContext) -> GameCommand {
-        self.paddles[0].move_paddle(1);
+        self.handle_movement(_ctx, 1, 0);
         GameCommand::None
     }
 
@@ -63,6 +71,19 @@ impl Game for Pong {
 }
 
 impl Pong {
+    fn handle_movement(&mut self, _ctx: &GameContext, mov_val: i32, paddle_index: usize) {
+        let paddle = &mut self.paddles[paddle_index];
+
+        let next_y = paddle.pos.y + paddle.velocity;
+        let max_y = _ctx.height as i32 - paddle.height as i32;
+
+        if next_y <= 0 || next_y >= max_y {
+            paddle.velocity = -paddle.velocity;
+        }
+
+        paddle.pos.y = (paddle.pos.y + paddle.velocity).clamp(0, max_y);
+    }
+
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
         const PADDLE_WIDTH: u32 = 12;
         const PADDLE_HEIGHT: u32 = 80;
