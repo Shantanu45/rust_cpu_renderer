@@ -59,7 +59,7 @@ impl Game for Pong {
     }
 
     fn update(&mut self, _input: &Input, _dt: f32, _ctx: &GameContext) -> GameCommand {
-        self.handle_movement(_ctx, 1, 0);
+        self.handle_input(_input, _ctx, 0);
         GameCommand::None
     }
 
@@ -71,17 +71,21 @@ impl Game for Pong {
 }
 
 impl Pong {
-    fn handle_movement(&mut self, _ctx: &GameContext, mov_val: i32, paddle_index: usize) {
-        let paddle = &mut self.paddles[paddle_index];
+    fn handle_input(&mut self, _input: &Input, _ctx: &GameContext, paddle_index: usize) {
+        let mut vel_mul = 0;
+        if _input.down {
+            vel_mul = 1;
+        } else if _input.up {
+            vel_mul = -1;
+        }
+        self.handle_movement(_ctx, vel_mul, 0);
+    }
 
-        let next_y = paddle.pos.y + paddle.velocity;
+    fn handle_movement(&mut self, _ctx: &GameContext, vel_mul: i32, paddle_index: usize) {
+        let paddle = &mut self.paddles[paddle_index];
         let max_y = _ctx.height as i32 - paddle.height as i32;
 
-        if next_y <= 0 || next_y >= max_y {
-            paddle.velocity = -paddle.velocity;
-        }
-
-        paddle.pos.y = (paddle.pos.y + paddle.velocity).clamp(0, max_y);
+        paddle.pos.y = (paddle.pos.y + (paddle.velocity * vel_mul)).clamp(0, max_y);
     }
 
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
