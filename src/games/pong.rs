@@ -2,16 +2,28 @@ use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
 use crate::math::Vec2i;
-use crate::renderer::{self, Renderer};
+use crate::renderer::Renderer;
 
-enum Side {
-    Left,
-    Right,
+struct Paddle {
+    pos: Vec2i,
+    width: u32,
+    height: u32,
+}
+
+impl Paddle {
+    fn new(pos: Vec2i, width: u32, height: u32) -> Self {
+        Self { pos, width, height }
+    }
+
+    fn move_paddle(&mut self, offset: i32) {
+        self.pos.y += offset;
+    }
 }
 
 pub struct Pong {
     left_score: u32,
     right_score: u32,
+    paddles: [Paddle; 2],
 }
 
 impl Pong {
@@ -19,6 +31,10 @@ impl Pong {
         Self {
             left_score: 0,
             right_score: 0,
+            paddles: [
+                Paddle::new(Vec2i::new(16, 0), 12, 80),
+                Paddle::new(Vec2i::new(772, 0), 12, 80),
+            ],
         }
     }
 }
@@ -31,27 +47,49 @@ impl Game for Pong {
     fn reset(&mut self, ctx: &GameContext) {
         self.left_score = 0;
         self.right_score = 0;
+        self.paddles = Self::starting_paddles(ctx);
     }
 
-    fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
+    fn update(&mut self, _input: &Input, _dt: f32, _ctx: &GameContext) -> GameCommand {
+        self.paddles[0].move_paddle(1);
         GameCommand::None
     }
 
     fn render(&self, renderer: &mut Renderer) {
-        renderer.draw_quad(
-            Vec2i { x: 100, y: 100 },
-            Vec2i { x: 200, y: 200 },
-            Color::RED,
-        );
+        for paddle in &self.paddles {
+            self.draw_paddle(renderer, paddle);
+        }
     }
 }
 
 impl Pong {
-    fn draw_board(&self, renderer: &mut Renderer, ctx: &GameContext, pos: Vec2i, side: Side) {
-        let mut x: u32 = 0;
-        match side {
-            Side::Left => x = 0,
-            Side::Right => x = ctx.width,
-        }
+    fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
+        const PADDLE_WIDTH: u32 = 12;
+        const PADDLE_HEIGHT: u32 = 80;
+        const PADDLE_MARGIN: u32 = 16;
+
+        let y = ((ctx.height - PADDLE_HEIGHT) / 2) as i32;
+
+        [
+            Paddle::new(
+                Vec2i::new(PADDLE_MARGIN as i32, y),
+                PADDLE_WIDTH,
+                PADDLE_HEIGHT,
+            ),
+            Paddle::new(
+                Vec2i::new((ctx.width - PADDLE_MARGIN - PADDLE_WIDTH) as i32, y),
+                PADDLE_WIDTH,
+                PADDLE_HEIGHT,
+            ),
+        ]
+    }
+
+    fn draw_paddle(&self, renderer: &mut Renderer, paddle: &Paddle) {
+        let end = Vec2i::new(
+            paddle.pos.x + paddle.width as i32,
+            paddle.pos.y + paddle.height as i32,
+        );
+
+        renderer.draw_quad(paddle.pos, end, Color::RED);
     }
 }

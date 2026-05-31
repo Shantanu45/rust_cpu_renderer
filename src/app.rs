@@ -2,7 +2,7 @@ use minifb::Window;
 
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
-use crate::games::{self, GameEntry};
+use crate::games::{self, GameEntry, pong};
 use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
@@ -34,7 +34,9 @@ impl App {
             input: Input::default(),
             games: games::registry(),
             selected_game: 0,
-            state: AppState::Menu,
+            state: AppState::Playing {
+                game: Box::new(pong::Pong::new()),
+            },
         }
     }
 
@@ -59,7 +61,6 @@ impl App {
     pub fn render(&mut self) {
         self.renderer.clear(Color::rgb(0x11, 0x11, 0x11));
         // temp
-        self.start_selected_game();
         match &self.state {
             AppState::Menu => self.render_menu(),
             AppState::Playing { game } => game.render(&mut self.renderer),
