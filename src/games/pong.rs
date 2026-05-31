@@ -1,5 +1,3 @@
-use std::alloc::handle_alloc_error;
-
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
@@ -10,7 +8,7 @@ struct Paddle {
     pos: Vec2i,
     width: u32,
     height: u32,
-    velocity: i32,
+    speed: i32,
 }
 
 impl Paddle {
@@ -19,7 +17,7 @@ impl Paddle {
             pos,
             width,
             height,
-            velocity: 1,
+            speed: 2,
         }
     }
 
@@ -28,14 +26,32 @@ impl Paddle {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+enum PaddleController {
+    HumanLeft,
+    HumanRight,
+    Ai,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum PongMode {
+    PlayerVsAi,
+    PlayerVsPlayer,
+}
+
 pub struct Pong {
     left_score: u32,
     right_score: u32,
     paddles: [Paddle; 2],
+    controllers: [PaddleController; 2],
 }
 
 impl Pong {
     pub fn new() -> Self {
+        Self::with_mode(PongMode::PlayerVsPlayer)
+    }
+
+    pub fn with_mode(mode: PongMode) -> Self {
         Self {
             left_score: 0,
             right_score: 0,
@@ -43,6 +59,7 @@ impl Pong {
                 Paddle::new(Vec2i::new(16, 0), 12, 80),
                 Paddle::new(Vec2i::new(772, 0), 12, 80),
             ],
+            controllers: Self::controllers_for_mode(mode),
         }
     }
 }
@@ -58,8 +75,12 @@ impl Game for Pong {
         self.paddles = Self::starting_paddles(ctx);
     }
 
-    fn update(&mut self, _input: &Input, _dt: f32, _ctx: &GameContext) -> GameCommand {
-        self.handle_input(_input, _ctx, 0);
+    fn update(&mut self, input: &Input, _dt: f32, ctx: &GameContext) -> GameCommand {
+        for paddle_index in 0..self.paddles.len() {
+            let direction = self.controller_direction(paddle_index, input);
+            self.handle_movement(ctx, direction, paddle_index);
+        }
+
         GameCommand::None
     }
 
@@ -71,21 +92,37 @@ impl Game for Pong {
 }
 
 impl Pong {
-    fn handle_input(&mut self, _input: &Input, _ctx: &GameContext, paddle_index: usize) {
-        let mut vel_mul = 0;
-        if _input.down {
-            vel_mul = 1;
-        } else if _input.up {
-            vel_mul = -1;
+    fn controllers_for_mode(mode: PongMode) -> [PaddleController; 2] {
+        match mode {
+            PongMode::PlayerVsAi => [PaddleController::HumanLeft, PaddleController::Ai],
+            PongMode::PlayerVsPlayer => [PaddleController::HumanLeft, PaddleController::HumanRight],
         }
-        self.handle_movement(_ctx, vel_mul, 0);
     }
 
-    fn handle_movement(&mut self, _ctx: &GameContext, vel_mul: i32, paddle_index: usize) {
-        let paddle = &mut self.paddles[paddle_index];
-        let max_y = _ctx.height as i32 - paddle.height as i32;
+    fn controller_direction(&self, paddle_index: usize, input: &Input) -> i32 {
+        match self.controllers[paddle_index] {
+            PaddleController::HumanLeft => Self::human_direction(input.left_up, input.left_down),
+            PaddleController::HumanRight => Self::human_direction(input.right_up, input.right_down),
+            PaddleController::Ai => 0,
+        }
+    }
 
-        paddle.pos.y = (paddle.pos.y + (paddle.velocity * vel_mul)).clamp(0, max_y);
+    fn human_direction(up: bool, down: bool) -> i32 {
+        if down {
+            1
+        } else if up {
+            -1
+        } else {
+            0
+        }
+    }
+
+    fn handle_movement(&mut self, ctx: &GameContext, direction: i32, paddle_index: usize) {
+        let paddle = &mut self.paddles[paddle_index];
+        let max_y = ctx.height as i32 - paddle.height as i32;
+
+        paddle.move_paddle(paddle.speed * direction);
+        paddle.pos.y = paddle.pos.y.clamp(0, max_y);
     }
 
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {

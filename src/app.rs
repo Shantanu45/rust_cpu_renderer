@@ -2,10 +2,11 @@ use minifb::Window;
 
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
-use crate::games::{self, GameEntry, pong};
+use crate::games::{self, GameEntry};
 use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
+use crate::ui::{Ui, UiRect};
 
 pub struct App {
     renderer: Renderer,
@@ -34,9 +35,7 @@ impl App {
             input: Input::default(),
             games: games::registry(),
             selected_game: 0,
-            state: AppState::Playing {
-                game: Box::new(pong::Pong::new()),
-            },
+            state: AppState::Menu,
         }
     }
 
@@ -76,11 +75,11 @@ impl App {
             return AppCommand::Quit;
         }
 
-        if self.input.up && self.selected_game > 0 {
+        if self.input.left_up && self.selected_game > 0 {
             self.selected_game -= 1;
         }
 
-        if self.input.down && self.selected_game + 1 < self.games.len() {
+        if self.input.left_down && self.selected_game + 1 < self.games.len() {
             self.selected_game += 1;
         }
 
@@ -101,9 +100,35 @@ impl App {
     }
 
     fn render_menu(&mut self) {
-        let y = 120 + (self.selected_game as i32 * 40);
-        self.renderer
-            .draw_quad(Vec2i::new(280, y), Vec2i::new(520, y + 28), Color::WHITE);
+        let mut ui = Ui::new(&mut self.renderer);
+        ui.label(
+            Vec2i::new(260, 96),
+            "CPU RENDERER",
+            Color::rgb(0xEE, 0xEE, 0xEE),
+            3,
+        );
+        ui.label(
+            Vec2i::new(282, 146),
+            "SELECT A GAME",
+            Color::rgb(0x88, 0xCC, 0xFF),
+            2,
+        );
+
+        for (index, game) in self.games.iter().enumerate() {
+            let y = 210 + index as i32 * 44;
+            ui.menu_item(
+                UiRect::new(Vec2i::new(260, y), Vec2i::new(540, y + 34)),
+                game.title,
+                index == self.selected_game,
+            );
+        }
+
+        ui.label(
+            Vec2i::new(238, 520),
+            "W S: MOVE  ENTER: START  ESC: QUIT",
+            Color::rgb(0xAA, 0xAA, 0xAA),
+            1,
+        );
     }
 
     fn handle_game_command(&mut self, command: GameCommand) -> AppCommand {
