@@ -103,7 +103,7 @@ impl App {
         let mut ui = Ui::new(&mut self.renderer);
         ui.label(
             Vec2i::new(260, 96),
-            "CPU RENDERER",
+            "WELCOME...",
             Color::rgb(0xEE, 0xEE, 0xEE),
             3,
         );
