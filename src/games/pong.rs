@@ -6,7 +6,7 @@ use crate::renderer::Renderer;
 
 struct Ball {
     pos: Vec2i,
-    speed: i32,
+    velocity: Vec2i,
     size: u32,
 }
 
@@ -14,13 +14,19 @@ impl Ball {
     fn new(size: u32) -> Self {
         Self {
             pos: Vec2i { x: 0, y: 0 },
-            speed: 0,
+            velocity: Vec2i { x: 0, y: 0 },
             size: size,
         }
     }
 
     fn move_ball(&mut self, offset: Vec2i) {
         self.pos += offset;
+    }
+
+    fn bounce(&mut self, mut axis: Vec2i) {
+        // x: x axis reflect, y: y axis reflect
+        axis *= Vec2i { x: -1, y: -1 };
+        self.velocity *= axis;
     }
 }
 
@@ -147,6 +153,8 @@ impl Pong {
         paddle.move_paddle(paddle.speed * direction);
         paddle.pos.y = paddle.pos.y.clamp(0, max_y);
     }
+
+    fn handle_ball_movement() {}
 
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
         const PADDLE_WIDTH: u32 = 12;

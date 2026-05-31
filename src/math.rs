@@ -1,4 +1,6 @@
+use std::io::ErrorKind::Other;
 use std::ops::AddAssign;
+use std::ops::MulAssign;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Vec2i {
@@ -18,6 +20,15 @@ impl AddAssign for Vec2i {
             x: self.x + other.x,
             y: self.y + other.y,
         };
+    }
+}
+
+impl MulAssign for Vec2i {
+    fn mul_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+        }
     }
 }
 
