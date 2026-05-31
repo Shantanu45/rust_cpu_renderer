@@ -1,7 +1,7 @@
 use minifb::Window;
 
 use crate::color::Color;
-use crate::game::{Game, GameCommand};
+use crate::game::{Game, GameCommand, GameContext};
 use crate::games::{self, GameEntry};
 use crate::input::Input;
 use crate::math::Vec2i;
@@ -9,6 +9,7 @@ use crate::renderer::Renderer;
 
 pub struct App {
     renderer: Renderer,
+    context: GameContext,
     input: Input,
     games: Vec<GameEntry>,
     selected_game: usize,
@@ -17,7 +18,7 @@ pub struct App {
 
 enum AppState {
     Menu,
-    Playing { game: Box<dyn Game> },
+    Playing { game: Box<dyn Game> }, // Box becuases Game is heap allocated, dyn mean concreate type of Game is unknown at compile time
 }
 
 pub enum AppCommand {
@@ -29,6 +30,7 @@ impl App {
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             renderer: Renderer::new(width, height),
+            context: GameContext { width, height },
             input: Input::default(),
             games: games::registry(),
             selected_game: 0,
@@ -48,7 +50,7 @@ impl App {
         match &mut self.state {
             AppState::Menu => self.update_menu(),
             AppState::Playing { game } => {
-                let command = game.update(dt);
+                let command = game.update(&self.input, dt, &self.context);
                 self.handle_game_command(command)
             }
         }
@@ -56,7 +58,8 @@ impl App {
 
     pub fn render(&mut self) {
         self.renderer.clear(Color::rgb(0x11, 0x11, 0x11));
-
+        // temp
+        self.start_selected_game();
         match &self.state {
             AppState::Menu => self.render_menu(),
             AppState::Playing { game } => game.render(&mut self.renderer),
@@ -89,9 +92,10 @@ impl App {
 
     fn start_selected_game(&mut self) {
         if let Some(entry) = self.games.get(self.selected_game) {
-            self.state = AppState::Playing {
-                game: (entry.create)(),
-            };
+            let mut game = (entry.create)();
+            game.reset(&self.context);
+
+            self.state = AppState::Playing { game };
         }
     }
 
