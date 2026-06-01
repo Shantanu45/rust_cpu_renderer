@@ -1,4 +1,4 @@
-## Rust Software Renderer
+## Rust CPU Renderer
 ```
 cargo run          # compile + run
 cargo build        # just compile (debug)
