@@ -13,8 +13,8 @@ struct Ball {
 impl Ball {
     fn new(size: u32) -> Self {
         Self {
-            pos: Vec2i { x: 0, y: 0 },
-            velocity: Vec2i { x: 0, y: 0 },
+            pos: Vec2i { x: 50, y: 50 },
+            velocity: Vec2i { x: 1, y: 1 },
             size: size,
         }
     }
@@ -108,6 +108,7 @@ impl Game for Pong {
             let direction = self.controller_direction(paddle_index, input);
             self.handle_movement(ctx, direction, paddle_index);
         }
+        self.handle_ball_movement(ctx);
 
         GameCommand::None
     }
@@ -154,7 +155,21 @@ impl Pong {
         paddle.pos.y = paddle.pos.y.clamp(0, max_y);
     }
 
-    fn handle_ball_movement() {}
+    fn handle_ball_movement(&mut self, ctx: &GameContext) {
+        if self.ball.pos.x <= 0 || self.ball.pos.x >= ctx.width as i32 {
+            self.ball.velocity = Vec2i {
+                x: -self.ball.velocity.x,
+                y: self.ball.velocity.y,
+            };
+        }
+        if self.ball.pos.y <= 0 || self.ball.pos.y >= ctx.height as i32 {
+            self.ball.velocity = Vec2i {
+                x: self.ball.velocity.x,
+                y: -self.ball.velocity.y,
+            };
+        }
+        self.ball.move_ball(self.ball.velocity);
+    }
 
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
         const PADDLE_WIDTH: u32 = 12;
