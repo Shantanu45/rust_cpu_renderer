@@ -6,6 +6,9 @@ const GLYPH_WIDTH: i32 = 5;
 const GLYPH_HEIGHT: i32 = 7;
 const GLYPH_SPACING: i32 = 1;
 
+// 'a is a lifetime parameter — think of it as a label that answers: "how long does the borrowed data live?"
+// Why lifetimes exist
+// Rust needs to guarantee that Ui never outlives the Renderer it points to — otherwise you'd have a dangling pointer (a reference to freed memory). The lifetime 'a is Rust's way of encoding that contract at compile time:
 pub struct Ui<'a> {
     renderer: &'a mut Renderer,
 }

@@ -1,8 +1,10 @@
+use std::task::Context;
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
+use crate::ui::Ui;
 use crate::util::{Quad, WallHit};
 
 struct Ball {
@@ -127,6 +129,7 @@ impl Game for Pong {
     }
 
     fn render(&self, renderer: &mut Renderer) {
+        self.draw_ui(renderer);
         self.draw_ball(renderer, &self.ball);
         for paddle in &self.paddles {
             self.draw_paddle(renderer, paddle);
@@ -207,9 +210,11 @@ impl Pong {
                 }
 
                 if self.ball.velocity.x < 0 {
+                    self.left_score += 1;
                     self.ball.velocity.x = self.ball.velocity.x.abs();
                     self.ball.pos.x = paddle.pos.x + paddle.width as i32;
                 } else {
+                    self.right_score += 1;
                     self.ball.velocity.x = -self.ball.velocity.x.abs();
                     self.ball.pos.x = paddle.pos.x - self.ball.size as i32;
                 }
@@ -277,6 +282,18 @@ impl Pong {
         let end = Vec2i::new(ball.pos.x + ball.size as i32, ball.pos.y + ball.size as i32);
         let ball_rect = Quad::from_corners(ball.pos, end);
         renderer.draw_quad(&ball_rect, Color::WHITE);
+    }
+
+    fn draw_ui(&self, renderer: &mut Renderer)
+    {
+        let s = format!("{}:{}", self.left_score, self.right_score);
+        let mut ui = Ui::new(renderer);
+        ui.label(
+            Vec2i::new(400, 30),
+            &s,
+            Color::rgb(0xEE, 0xEE, 0xEE),
+            2,
+        );
     }
 }
 
