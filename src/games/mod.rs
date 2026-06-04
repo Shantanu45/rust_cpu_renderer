@@ -1,4 +1,5 @@
 pub mod pong;
+pub mod snake;
 
 use crate::game::Game;
 
