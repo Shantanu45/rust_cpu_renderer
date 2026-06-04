@@ -51,6 +51,10 @@ impl App {
         match &mut self.state {
             AppState::Menu => self.update_menu(),
             AppState::Playing { game } => {
+                if self.input.back {
+                    return self.handle_game_command(GameCommand::BackToMenu);
+                }
+
                 let command = game.update(&self.input, dt, &self.context);
                 self.handle_game_command(command)
             }
@@ -140,5 +144,29 @@ impl App {
             }
             GameCommand::Quit => AppCommand::Quit,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn escape_returns_from_game_to_menu() {
+        let mut app = App::new(800, 600);
+
+        app.input = Input {
+            confirm: true,
+            ..Input::default()
+        };
+        app.tick(1.0 / 60.0);
+        assert!(matches!(app.state, AppState::Playing { .. }));
+
+        app.input = Input {
+            back: true,
+            ..Input::default()
+        };
+        assert!(matches!(app.tick(1.0 / 60.0), AppCommand::None));
+        assert!(matches!(app.state, AppState::Menu));
     }
 }
