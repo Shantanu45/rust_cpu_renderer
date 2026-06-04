@@ -35,7 +35,10 @@ impl Renderer {
         raster::draw_quad(&mut self.framebuffer, rect, color);
     }
 
-    pub fn draw_filled_quad(&mut self, top_left: Vec2i, bottom_right: Vec2i, color: Color) {
+    pub fn draw_filled_quad(&mut self, rect: &Quad, color: Color) {
+        let top_left = rect.top_left();
+        let bottom_right = rect.bottom_right();
+
         for y in top_left.y..bottom_right.y {
             for x in top_left.x..bottom_right.x {
                 self.draw_pixel(Vec2i::new(x, y), color);

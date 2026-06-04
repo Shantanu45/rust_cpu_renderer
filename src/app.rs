@@ -6,7 +6,8 @@ use crate::games::{self, GameEntry};
 use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
-use crate::ui::{Ui, UiRect};
+use crate::ui::Ui;
+use crate::util::Quad;
 
 pub struct App {
     renderer: Renderer,
@@ -19,7 +20,7 @@ pub struct App {
 
 enum AppState {
     Menu,
-    Playing { game: Box<dyn Game> }, // Box becuases Game is heap allocated, dyn mean concreate type of Game is unknown at compile time
+    Playing { game: Box<dyn Game> }, // Box because Game is heap allocated, dyn mean concrete type of Game is unknown at compile time
 }
 
 pub enum AppCommand {
@@ -121,7 +122,7 @@ impl App {
         for (index, game) in self.games.iter().enumerate() {
             let y = 210 + index as i32 * 44;
             ui.menu_item(
-                UiRect::new(Vec2i::new(260, y), Vec2i::new(540, y + 34)),
+                &Quad::from_corners(Vec2i::new(260, y), Vec2i::new(540, y + 34)),
                 game.title,
                 index == self.selected_game,
             );
