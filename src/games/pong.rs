@@ -169,6 +169,11 @@ impl Pong {
     }
 
     fn handle_ball_movement(&mut self, _ctx: &GameContext) {
+        // 1. Move first
+        let velocity = self.ball.velocity;
+        self.ball.move_ball(velocity);
+
+        // 2. Build fresh ball quad after movement
         let ball_quad = Quad::from_corners(
             self.ball.pos,
             Vec2i::new(
@@ -177,13 +182,7 @@ impl Pong {
             ),
         );
 
-        if let Some(hit) = ball_quad.wall_hit(&self.wall) {
-            match hit {
-                WallHit::Left | WallHit::Right => self.ball.velocity.x *= -1,
-                WallHit::Top | WallHit::Bottom => self.ball.velocity.y *= -1,
-            }
-        }
-
+        // 3. Check paddle collisions
         for paddle in &self.paddles {
             let paddle_quad = Quad::from_corners(
                 paddle.pos,
@@ -196,11 +195,11 @@ impl Pong {
             if ball_quad.aabb_collides(&paddle_quad) {
                 let paddle_center_y = paddle.pos.y + paddle.height as i32 / 2;
                 let ball_center_y = self.ball.pos.y + self.ball.size as i32 / 2;
-
                 let offset = ball_center_y - paddle_center_y;
-                let normalized = offset as f32 / (paddle.height as f32 / 2.0);
 
+                let normalized = offset as f32 / (paddle.height as f32 / 2.0);
                 let max_y_speed = 5;
+
                 self.ball.velocity.y = (normalized * max_y_speed as f32).round() as i32;
 
                 if self.ball.velocity.y == 0 {
@@ -208,11 +207,9 @@ impl Pong {
                 }
 
                 if self.ball.velocity.x < 0 {
-                    // Hit the left paddle's right face.
                     self.ball.velocity.x = self.ball.velocity.x.abs();
                     self.ball.pos.x = paddle.pos.x + paddle.width as i32;
                 } else {
-                    // Hit the right paddle's left face.
                     self.ball.velocity.x = -self.ball.velocity.x.abs();
                     self.ball.pos.x = paddle.pos.x - self.ball.size as i32;
                 }
@@ -221,14 +218,35 @@ impl Pong {
             }
         }
 
-        let velocity = self.ball.velocity;
-        self.ball.move_ball(velocity);
+        // 4. Rebuild again after paddle correction
+        let ball_quad = Quad::from_corners(
+            self.ball.pos,
+            Vec2i::new(
+                self.ball.pos.x + self.ball.size as i32,
+                self.ball.pos.y + self.ball.size as i32,
+            ),
+        );
+
+        // 5. Wall collision with corrected position
+        if let Some(hit) = ball_quad.wall_hit(&self.wall) {
+            match hit {
+                WallHit::Left | WallHit::Right => self.ball.velocity.x *= -1,
+                WallHit::Top => {
+                    self.ball.velocity.y = self.ball.velocity.y.abs();
+                    self.ball.pos.y = 0;
+                }
+                WallHit::Bottom => {
+                    self.ball.velocity.y = -self.ball.velocity.y.abs();
+                    self.ball.pos.y = 600 - self.ball.size as i32;
+                }
+            }
+        }
     }
 
     fn starting_paddles(ctx: &GameContext) -> [Paddle; 2] {
         const PADDLE_WIDTH: u32 = 12;
         const PADDLE_HEIGHT: u32 = 80;
-        const PADDLE_MARGIN: u32 = 2;
+        const PADDLE_MARGIN: u32 = 0;
 
         let y = ((ctx.height - PADDLE_HEIGHT) / 2) as i32;
 

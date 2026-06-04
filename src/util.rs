@@ -10,10 +10,12 @@ impl Line {
     }
 }
 
+// <const N: usize> means: This type takes a compile-time integer parameter.
 pub struct Polygon<const N: usize> {
     pub vertices: [Vec2i; N],
 }
 
+// Implement these methods for every possible Polygon size.
 impl<const N: usize> Polygon<N> {
     pub fn new(vertices: [Vec2i; N]) -> Self {
         Self { vertices }
@@ -32,6 +34,7 @@ impl<const N: usize> Polygon<N> {
     }
 }
 
+// Type aliases
 pub type LineShape = Polygon<2>;
 pub type Triangle = Polygon<3>;
 pub type Quad = Polygon<4>;
