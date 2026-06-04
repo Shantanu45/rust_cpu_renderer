@@ -8,3 +8,4 @@ pub mod math;
 pub mod raster;
 pub mod renderer;
 pub mod ui;
+pub mod util;

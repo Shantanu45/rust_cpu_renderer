@@ -3,6 +3,7 @@ use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
 use crate::math::Vec2i;
 use crate::renderer::Renderer;
+use crate::util::Quad;
 
 struct Ball {
     pos: Vec2i,
@@ -197,13 +198,13 @@ impl Pong {
             paddle.pos.x + paddle.width as i32,
             paddle.pos.y + paddle.height as i32,
         );
-
-        renderer.draw_quad(paddle.pos, end, Color::RED);
+        let paddle_rect = Quad::from_corners(paddle.pos, end);
+        renderer.draw_quad(&paddle_rect, Color::RED);
     }
 
     fn draw_ball(&self, renderer: &mut Renderer, ball: &Ball) {
         let end = Vec2i::new(ball.pos.x + ball.size as i32, ball.pos.y + ball.size as i32);
-
-        renderer.draw_quad(ball.pos, end, Color::WHITE);
+        let ball_rect = Quad::from_corners(ball.pos, end);
+        renderer.draw_quad(&ball_rect, Color::WHITE);
     }
 }
