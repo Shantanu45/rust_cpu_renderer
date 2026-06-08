@@ -1,4 +1,4 @@
-use std::ops::AddAssign;
+use std::ops::{AddAssign, SubAssign};
 use std::ops::MulAssign;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -27,6 +27,15 @@ impl MulAssign for Vec2i {
         *self = Self {
             x: self.x * other.x,
             y: self.y * other.y,
+        }
+    }
+}
+
+impl SubAssign for Vec2i {
+    fn sub_assign(&mut self, other: Self) {
+        *self = Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
         }
     }
 }
