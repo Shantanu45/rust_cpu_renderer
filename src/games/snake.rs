@@ -37,7 +37,7 @@ pub struct Snake{
     alive: bool,
     block_width_x : u32,
     block_width_y : u32,
-    snake: Vec<Block>,
+    snake: Box<Block>,
 }
 
 impl Snake{
@@ -52,7 +52,7 @@ impl Snake{
             grid: Vec2i{x: 10, y: 10},
             block_width_x : 0,
             block_width_y : 0,
-            snake: vec!(Block::new(Vec2i{x: 0, y:  0}, velocity)),
+            snake: Box::new(Block::new(Vec2i{x: 0, y:  0}, velocity)),
         }
 
     }
@@ -110,16 +110,15 @@ impl Snake {
     }
 
     fn draw_snake(&self, renderer: &mut Renderer){
-        renderer.draw_filled_quad(&self.block_to_quad(self.snake.get(0).unwrap()).unwrap(), Color::WHITE);
+        renderer.draw_filled_quad(&self.block_to_quad(self.snake.as_ref()).unwrap(), Color::WHITE);
     }
 
     fn move_snake(&mut self){
         thread::sleep(Duration::from_millis(500));
-        for b in &mut self.snake{
-            b.pos += self.velocity;
-            b.pos.x %= self.grid.x;
-            b.pos.y %= self.grid.x;
-        }
+        let b = self.snake.as_mut();
+        b.pos += self.velocity;
+        b.pos.x %= self.grid.x;
+        b.pos.y %= self.grid.x;
     }
 
 }
