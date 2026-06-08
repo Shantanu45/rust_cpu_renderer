@@ -12,5 +12,9 @@ pub fn registry() -> Vec<GameEntry> {
     vec![GameEntry {
         title: "Pong",
         create: || Box::new(pong::Pong::new()),
+    },
+    GameEntry{
+        title: "Snake",
+        create: || Box::new(snake::Snake::new()),
     }]
 }
