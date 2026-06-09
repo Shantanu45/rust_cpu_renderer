@@ -17,9 +17,9 @@ struct Block{
 }
 
 impl Block{
-    fn new(pos: Vec2i, velocity: Vec2i) -> Self{
-        Self{
-            pos: Vec2i{x: 0, y: 0},
+    fn new(pos: Vec2i, velocity: Vec2i) -> Self {
+        Self {
+            pos,
             size: 1,
             velocity,
             child: None,
@@ -38,6 +38,8 @@ pub struct Snake{
     block_width_x : u32,
     block_width_y : u32,
     snake: Box<Block>,
+    step_timer: f32,
+    step_interval: f32, // e.g. 0.2 seconds per move
 }
 
 impl Snake{
@@ -53,6 +55,8 @@ impl Snake{
             block_width_x : 0,
             block_width_y : 0,
             snake: Box::new(Block::new(Vec2i{x: 0, y:  0}, velocity)),
+            step_timer: 0.0,
+            step_interval: 1.0,
         }
 
     }
@@ -70,8 +74,12 @@ impl Game for Snake{
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
-        //todo!()
-        self.move_snake();
+        self.step_timer += dt;
+
+        if self.step_timer >= self.step_interval {
+            self.step_timer -= self.step_interval;
+            self.move_snake();
+        }
 
         GameCommand::None
     }
@@ -113,12 +121,13 @@ impl Snake {
         renderer.draw_filled_quad(&self.block_to_quad(self.snake.as_ref()).unwrap(), Color::WHITE);
     }
 
-    fn move_snake(&mut self){
-        thread::sleep(Duration::from_millis(500));
+    fn move_snake(&mut self) {
         let b = self.snake.as_mut();
+
         b.pos += self.velocity;
+
         b.pos.x %= self.grid.x;
-        b.pos.y %= self.grid.x;
+        b.pos.y %= self.grid.y;
     }
 
 }
