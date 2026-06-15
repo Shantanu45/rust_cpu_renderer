@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, SubAssign};
+use std::ops::{AddAssign, Mul, SubAssign};
 use std::ops::MulAssign;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -27,6 +27,17 @@ impl MulAssign for Vec2i {
         *self = Self {
             x: self.x * other.x,
             y: self.y * other.y,
+        }
+    }
+}
+
+impl Mul<i32> for Vec2i{
+    type Output = Vec2i;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        Vec2i {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }

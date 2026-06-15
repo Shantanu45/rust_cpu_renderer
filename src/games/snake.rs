@@ -12,16 +12,18 @@ use std::time::Duration;
 struct Block{
     pos: Vec2i,
     size: u32,
-    velocity: Vec2i,
+    forward: Vec2i,
+    speed: i32,
     child: Option<Box<Block>>,
 }
 
 impl Block{
-    fn new(pos: Vec2i, velocity: Vec2i) -> Self {
+    fn new(pos: Vec2i, speed: i32) -> Self {
         Self {
             pos,
             size: 1,
-            velocity,
+            forward: Vec2i{x: 1, y: 0},
+            speed,
             child: None,
         }
     }
@@ -33,7 +35,7 @@ pub struct Snake{
     grid: Vec2i,
     score: u32,
     length: u32,
-    velocity: Vec2i,
+    speed: i32,
     alive: bool,
     block_width_x : u32,
     block_width_y : u32,
@@ -44,17 +46,17 @@ pub struct Snake{
 
 impl Snake{
     pub fn new() -> Self{
-        let velocity =Vec2i{x: 1, y: 0};
+        let speed = 1;
         Self{
             wall: Quad::from_corners(Vec2i::new(0, 0), Vec2i::new(800, 600)),
             score: 0,
             length: 1,
-            velocity,
+            speed,
             alive: true,
             grid: Vec2i{x: 10, y: 10},
             block_width_x : 0,
             block_width_y : 0,
-            snake: Box::new(Block::new(Vec2i{x: 0, y:  0}, velocity)),
+            snake: Box::new(Block::new(Vec2i{x: 0, y:  0}, speed)),
             step_timer: 0.0,
             step_interval: 1.0,
         }
@@ -124,7 +126,7 @@ impl Snake {
     fn move_snake(&mut self) {
         let b = self.snake.as_mut();
 
-        b.pos += self.velocity;
+        b.pos += b.forward * self.speed;
 
         b.pos.x %= self.grid.x;
         b.pos.y %= self.grid.y;
