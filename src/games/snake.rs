@@ -97,7 +97,7 @@ impl Game for Snake{
         //todo!()
         self.block_width_x = ctx.width/self.grid.x as u32;
         self.block_width_y = ctx.height/self.grid.y as u32;
-        self.distribute_food(2);
+        self.distribute_food(1);
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
@@ -105,6 +105,9 @@ impl Game for Snake{
         self.step_timer += dt;
 
         if self.step_timer >= self.step_interval {
+            if self.food.is_empty() {
+                self.distribute_food(1);
+            }
             self.step_timer -= self.step_interval;
             self.move_snake();
         }
@@ -128,7 +131,7 @@ impl Snake {
         let mut exclusion_list = Vec::new();
         for pos in &self.tracker
         {
-            let index = pos.x * pos.y;
+            let index = pos.x + (pos.y * self.grid.x);
             exclusion_list.push(index);
         }
 
@@ -186,8 +189,8 @@ impl Snake {
     fn block_to_pixels(&self, pos: Vec2i) -> Vec2i{
         let mut px_coord: Vec2i = Vec2i::new(-1, -1);
 
-        px_coord.x = self.block_width_x as i32* pos.x;
-        px_coord.y = self.block_width_y as i32* pos.y;
+        px_coord.x = self.block_width_x as i32 * pos.x;
+        px_coord.y = self.block_width_y as i32 * pos.y;
 
         px_coord
     }
