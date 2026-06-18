@@ -46,6 +46,7 @@ impl Head {
     }
 }
 
+#[derive(Clone)]
 struct Food {
     pos: Vec2i,
     color: Color,
@@ -96,8 +97,6 @@ impl Game for Snake{
         //todo!()
         self.block_width_x = ctx.width/self.grid.x as u32;
         self.block_width_y = ctx.height/self.grid.y as u32;
-        self.add_body_block(Vec2i{x: 1, y: 0});
-        self.add_body_block(Vec2i{x: 0, y: 0});
         self.distribute_food(2);
     }
 
@@ -108,6 +107,11 @@ impl Game for Snake{
         if self.step_timer >= self.step_interval {
             self.step_timer -= self.step_interval;
             self.move_snake();
+        }
+
+        if let (true, Some(food)) = self.can_eat() {
+            let food = food.clone();
+            self.eat(&food);
         }
 
         GameCommand::None
@@ -131,6 +135,22 @@ impl Snake {
         }
     }
 
+    fn can_eat(&self) -> (bool, Option<&Food>){
+        for i in &self.food {
+            if self.snake.pos == i.pos{
+                return (true, Some(i))
+            }
+        }
+        (false, None)
+    }
+
+    fn eat(&mut self, food: &Food)
+    {
+        if let Some(index) =  self.food.iter().position(|u| u.pos == food.pos) {
+            let removed =  self.food.swap_remove(index);
+        }
+        self.add_body_block(food.pos);
+    }
     fn control_snake(&mut self, input: &Input)
     {
         // todo: maybe invalidate snake reverse movement
