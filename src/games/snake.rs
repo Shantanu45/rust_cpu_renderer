@@ -61,17 +61,17 @@ pub struct Snake{
 impl Snake{
     pub fn new() -> Self{
         let speed = 1;
-
+        let start_pos = Vec2i{x: 2, y: 0};
         Self{
             wall: Quad::from_corners(Vec2i::new(0, 0), Vec2i::new(800, 600)),
             score: 0,
-            tracker: vec!(Vec2i{x: 0, y: 0}),
+            tracker: vec!(start_pos),
             speed,
             alive: true,
             grid: Vec2i{x: 10, y: 10},
             block_width_x : 0,
             block_width_y : 0,
-            snake: Box::new(Head::new(Vec2i{x: 2, y:  0}, speed)),
+            snake: Box::new(Head::new(start_pos, speed)),
             step_timer: 0.0,
             step_interval: 1.0,
         }
@@ -92,6 +92,7 @@ impl Game for Snake{
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
+        self.control_snake(input);
         self.step_timer += dt;
 
         if self.step_timer >= self.step_interval {
@@ -108,6 +109,20 @@ impl Game for Snake{
 }
 
 impl Snake {
+
+    fn control_snake(&mut self, input: &Input)
+    {
+        // todo: maybe invalidate snake reverse movement
+        if(input.left_down){
+            self.snake.forward = Vec2i{x: 0, y: 1};
+        }else if (input.left_up){
+            self.snake.forward = Vec2i{x: 0, y: -1};
+        }else if (input.left_left){
+            self.snake.forward = Vec2i{x:-1 , y: 0};
+        }else if (input.left_right){
+            self.snake.forward = Vec2i{x: 1, y: 0};
+        }
+    }
     fn block_to_pixels(&self, pos: Vec2i) -> Vec2i{
         let mut px_coord: Vec2i = Vec2i::new(-1, -1);
 
@@ -136,8 +151,10 @@ impl Snake {
     }
 
     fn draw_snake(&self, renderer: &mut Renderer){
+        // draw head
         renderer.draw_filled_quad(&self.block_to_quad(self.snake.as_ref().pos).unwrap(), Color::WHITE);
 
+        // draw rest of the body
         let mut current = self.snake.child.as_ref();
         while let Some(node) = current {
             renderer.draw_filled_quad(&self.block_to_quad(self.tracker[current.unwrap().r_pos as usize]).unwrap(), Color::WHITE);
@@ -153,14 +170,14 @@ impl Snake {
         b.pos.x %= self.grid.x;
         b.pos.y %= self.grid.y;
 
+        // move body
         if self.tracker.len() > 1{
             for i in (1..self.tracker.len()).rev() {
-                self.tracker[i] = self.tracker[i - 1];
-            }
+                self.tracker[i] = self.tracker[i - 1];            }
         }
 
+        //move head
         self.tracker[0] = b.pos.clone();
-
     }
 
     fn add_body_block(&mut self, pos: Vec2i)
