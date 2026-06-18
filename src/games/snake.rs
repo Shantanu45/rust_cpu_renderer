@@ -124,17 +124,32 @@ impl Game for Snake{
 }
 
 impl Snake {
-    fn random_pos(&self, range: Vec2i) -> Vec2i{
-        let mut rng = rand::rng();
-        let rand_x = rng.random_range(0..range.x);
-        let rand_y = rng.random_range(0..range.y);
+    fn create_exclusion_list(&self) -> Vec<i32>{
+        let mut exclusion_list = Vec::new();
+        for pos in &self.tracker
+        {
+            let index = pos.x * pos.y;
+            exclusion_list.push(index);
+        }
 
+        let scope: Vec<i32> = (0..self.grid.x * self.grid.y)
+            .filter(|x| !exclusion_list.contains(x))
+            .collect();
+        scope
+    }
+    fn random_pos(&self, range: Vec2i, scope: &Vec<i32>) -> Vec2i{
+        let mut rng = rand::rng();
+        let rand_val = rng.random_range(0..scope.len());
+        let rand_index = scope[rand_val];
+        let rand_y = (rand_index as i32/self.grid.x);
+        let rand_x = rand_index as i32 - (rand_y * self.grid.x);
         Vec2i{x: rand_x, y: rand_y}
     }
     fn distribute_food(&mut self, count: u32)
     {
+        let scope = self.create_exclusion_list();
         for i in 0..count{
-            let rand_pos = self.random_pos(self.grid);
+            let rand_pos = self.random_pos(self.grid, &scope);
             self.food.push(Food{pos: rand_pos, color: Color::RED});
         }
     }
