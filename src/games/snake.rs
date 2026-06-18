@@ -1,6 +1,10 @@
 use std::process::Child;
 use std::thread::sleep;
 use minifb::Key::V;
+use std::thread;
+use std::time::Duration;
+use rand::{Rng, RngExt};
+
 use crate::color::Color;
 use crate::game::{Game, GameCommand, GameContext};
 use crate::input::Input;
@@ -8,8 +12,6 @@ use crate::math::Vec2i;
 use crate::renderer::Renderer;
 use crate::ui::Ui;
 use crate::util::{Quad, WallHit};
-use std::thread;
-use std::time::Duration;
 
 struct BodyBlock{
     r_pos: i32,
@@ -44,6 +46,11 @@ impl Head {
     }
 }
 
+struct Food {
+    pos: Vec2i,
+    color: Color,
+}
+
 pub struct Snake{
     wall: Quad,
     grid: Vec2i,
@@ -56,6 +63,7 @@ pub struct Snake{
     snake: Box<Head>,
     step_timer: f32,
     step_interval: f32, // e.g. 0.2 seconds per move
+    food: Vec<Food>,
 }
 
 impl Snake{
@@ -74,6 +82,7 @@ impl Snake{
             snake: Box::new(Head::new(start_pos, speed)),
             step_timer: 0.0,
             step_interval: 1.0,
+            food: Vec::new(),
         }
     }
 }
@@ -89,6 +98,7 @@ impl Game for Snake{
         self.block_width_y = ctx.height/self.grid.y as u32;
         self.add_body_block(Vec2i{x: 1, y: 0});
         self.add_body_block(Vec2i{x: 0, y: 0});
+        self.distribute_food(2);
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
@@ -104,11 +114,22 @@ impl Game for Snake{
     }
 
     fn render(&self, renderer: &mut Renderer) {
+        self.draw_food(renderer);
         self.draw_snake(renderer);
     }
 }
 
 impl Snake {
+
+    fn distribute_food(&mut self, count: u32)
+    {
+        let mut rng = rand::rng();
+        for i in 0..count{
+            let rand_x = rng.random_range(0..self.grid.x);
+            let rand_y = rng.random_range(0..self.grid.y);
+            self.food.push(Food{pos: Vec2i{x: rand_x, y: rand_y}, color: Color::RED});
+        }
+    }
 
     fn control_snake(&mut self, input: &Input)
     {
@@ -162,6 +183,12 @@ impl Snake {
         }
     }
 
+    fn draw_food(&self, renderer: &mut Renderer) {
+        for f in &self.food {
+            renderer.draw_filled_quad(&self.block_to_quad(f.pos).unwrap(), f.color);
+        }
+    }
+
     fn move_snake(&mut self) {
         let b = self.snake.as_mut();
 
@@ -173,7 +200,8 @@ impl Snake {
         // move body
         if self.tracker.len() > 1{
             for i in (1..self.tracker.len()).rev() {
-                self.tracker[i] = self.tracker[i - 1];            }
+                self.tracker[i] = self.tracker[i - 1];
+            }
         }
 
         //move head
