@@ -124,14 +124,18 @@ impl Game for Snake{
 }
 
 impl Snake {
+    fn random_pos(&self, range: Vec2i) -> Vec2i{
+        let mut rng = rand::rng();
+        let rand_x = rng.random_range(0..range.x);
+        let rand_y = rng.random_range(0..range.y);
 
+        Vec2i{x: rand_x, y: rand_y}
+    }
     fn distribute_food(&mut self, count: u32)
     {
-        let mut rng = rand::rng();
         for i in 0..count{
-            let rand_x = rng.random_range(0..self.grid.x);
-            let rand_y = rng.random_range(0..self.grid.y);
-            self.food.push(Food{pos: Vec2i{x: rand_x, y: rand_y}, color: Color::RED});
+            let rand_pos = self.random_pos(self.grid);
+            self.food.push(Food{pos: rand_pos, color: Color::RED});
         }
     }
 

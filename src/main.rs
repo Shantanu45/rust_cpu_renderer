@@ -3,7 +3,7 @@ use minifb::{Window, WindowOptions};
 use rust_renderer::app::{App, AppCommand};
 
 const W: u32 = 800;
-const H: u32 = 600;
+const H: u32 = 800;
 
 fn main() {
     let mut window = Window::new(
