@@ -98,6 +98,7 @@ impl Game for Snake{
         self.block_width_x = ctx.width/self.grid.x as u32;
         self.block_width_y = ctx.height/self.grid.y as u32;
         self.distribute_food(1);
+        self.score = 0;
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
@@ -123,6 +124,7 @@ impl Game for Snake{
     fn render(&self, renderer: &mut Renderer) {
         self.draw_food(renderer);
         self.draw_snake(renderer);
+        self.draw_ui(renderer);
     }
 }
 
@@ -169,9 +171,10 @@ impl Snake {
     fn eat(&mut self, food: &Food)
     {
         if let Some(index) =  self.food.iter().position(|u| u.pos == food.pos) {
-            let removed =  self.food.swap_remove(index);
+            let _removed =  self.food.swap_remove(index);
         }
         self.add_body_block(food.pos);
+        self.score += 1;
     }
     fn control_snake(&mut self, input: &Input)
     {
@@ -236,8 +239,8 @@ impl Snake {
 
         b.pos += b.forward * self.speed;
 
-        b.pos.x %= self.grid.x;
-        b.pos.y %= self.grid.y;
+        b.pos.x = b.pos.x.rem_euclid(self.grid.x);
+        b.pos.y = b.pos.y.rem_euclid(self.grid.y);
 
         // move body
         if self.tracker.len() > 1{
@@ -261,6 +264,18 @@ impl Snake {
         }
         self.tracker.push(pos);
         *current = Some(Box::new(bb));
+    }
+
+    fn draw_ui(&self, renderer: &mut Renderer)
+    {
+        let s = format!("{}", self.score);
+        let mut ui = Ui::new(renderer);
+        ui.label(
+            Vec2i::new(400, 30),
+            &s,
+            Color::rgb(0x00, 0xEE, 0x00),
+            4,
+        );
     }
 
 }
