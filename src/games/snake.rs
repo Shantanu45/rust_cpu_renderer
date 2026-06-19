@@ -65,6 +65,7 @@ pub struct Snake{
     step_timer: f32,
     step_interval: f32, // e.g. 0.2 seconds per move
     food: Vec<Food>,
+    is_eating: bool,
 }
 
 impl Snake{
@@ -84,6 +85,7 @@ impl Snake{
             step_timer: 0.0,
             step_interval: 1.0,
             food: Vec::new(),
+            is_eating: false,
         }
     }
 }
@@ -102,6 +104,7 @@ impl Game for Snake{
     }
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
+        if !self.alive { return GameCommand::None}
         self.control_snake(input);
         self.step_timer += dt;
 
@@ -109,6 +112,12 @@ impl Game for Snake{
             if self.food.is_empty() {
                 self.distribute_food(1);
             }
+
+            if self.check_self_collision() {
+                self.alive = false;
+                return GameCommand::None
+            }
+
             self.step_timer -= self.step_interval;
             self.move_snake();
         }
@@ -129,6 +138,14 @@ impl Game for Snake{
 }
 
 impl Snake {
+
+    fn check_self_collision(&self) -> bool{
+        self.tracker
+            .get(2..)
+            .is_some_and(|body| {
+                body.iter().any(|t| t.x == self.snake.pos.x && t.y == self.snake.pos.y)
+            }) && !self.is_eating
+    }
     fn create_exclusion_list(&self) -> Vec<i32>{
         let mut exclusion_list = Vec::new();
         for pos in &self.tracker
@@ -175,17 +192,19 @@ impl Snake {
         }
         self.add_body_block(food.pos);
         self.score += 1;
+
+        self.is_eating = true;
     }
     fn control_snake(&mut self, input: &Input)
     {
         // todo: maybe invalidate snake reverse movement
-        if(input.left_down){
+        if(input.left_down && self.snake.forward != Vec2i{x: 0, y: 1}){
             self.snake.forward = Vec2i{x: 0, y: 1};
-        }else if (input.left_up){
+        }else if (input.left_up && self.snake.forward != Vec2i{x: 0, y: -1}){
             self.snake.forward = Vec2i{x: 0, y: -1};
-        }else if (input.left_left){
+        }else if (input.left_left && self.snake.forward != Vec2i{x: 1, y: 0}){
             self.snake.forward = Vec2i{x:-1 , y: 0};
-        }else if (input.left_right){
+        }else if (input.left_right && self.snake.forward != Vec2i{x: -1, y: 0}){
             self.snake.forward = Vec2i{x: 1, y: 0};
         }
     }
@@ -251,6 +270,7 @@ impl Snake {
 
         //move head
         self.tracker[0] = b.pos.clone();
+        if self.is_eating { self.is_eating = false }
     }
 
     fn add_body_block(&mut self, pos: Vec2i)
@@ -268,7 +288,16 @@ impl Snake {
 
     fn draw_ui(&self, renderer: &mut Renderer)
     {
-        let s = format!("{}", self.score);
+        let s: String;
+
+        if self.alive {
+            s = format!("{}", self.score);
+        }
+        else {
+            s = format!("Died!: {}", self.score);
+        }
+
+
         let mut ui = Ui::new(renderer);
         ui.label(
             Vec2i::new(400, 30),
@@ -277,5 +306,4 @@ impl Snake {
             4,
         );
     }
-
 }
