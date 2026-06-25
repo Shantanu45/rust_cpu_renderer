@@ -1,5 +1,6 @@
 pub mod pong;
 pub mod snake;
+pub mod asteroids;
 
 use crate::game::Game;
 
@@ -16,5 +17,10 @@ pub fn registry() -> Vec<GameEntry> {
     GameEntry{
         title: "Snake",
         create: || Box::new(snake::Snake::new()),
-    }]
+    },
+         GameEntry{
+             title:"Asteroids",
+             create: || Box::new(asteroids::Asteroids::new()),
+         }
+    ]
 }
