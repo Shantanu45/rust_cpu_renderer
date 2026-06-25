@@ -1,7 +1,7 @@
-use std::ops::{AddAssign, Mul, SubAssign};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 use std::ops::MulAssign;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub struct Vec2i {
     pub x: i32,
     pub y: i32,
@@ -22,6 +22,17 @@ impl AddAssign for Vec2i {
     }
 }
 
+impl Add for Vec2i{
+    type Output = Vec2i;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Vec2i{
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
 impl MulAssign for Vec2i {
     fn mul_assign(&mut self, other: Self) {
         *self = Self {
@@ -38,6 +49,17 @@ impl Mul<i32> for Vec2i{
         Vec2i {
             x: self.x * rhs,
             y: self.y * rhs,
+        }
+    }
+}
+
+impl Sub for Vec2i{
+    type Output = Vec2i;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vec2i{
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
         }
     }
 }

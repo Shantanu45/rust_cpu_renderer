@@ -27,6 +27,20 @@ impl Renderer {
         raster::draw_line(&mut self.framebuffer, line, color);
     }
 
+    pub fn draw_line_connected(&mut self, verts: Vec<Vec2i>, closed: bool, color: Color)
+    {
+        for v in 1..verts.len(){
+            let line = Line{vertices: [verts[v], verts[v - 1]]};//<[Vec2i; 2]>::try_from(vec![verts[v], verts[v-1]]).unwrap() };
+            self.draw_line(&line, color);
+        }
+        if closed
+        {
+            let line = Line{vertices: [*verts.last().unwrap(), verts[0]]};
+            self.draw_line(&line, color);
+        }
+    }
+
+
     pub fn draw_triangle(&mut self, triangle: &Triangle, color: Color) {
         raster::draw_triangle(&mut self.framebuffer, triangle, color);
     }
