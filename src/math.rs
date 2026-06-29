@@ -98,6 +98,31 @@ impl Vec3 {
     pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
+
+    pub const fn from_vec2_1(v: Vec2) -> Vec3{
+        Self{
+            x: v.x,
+            y: v.y,
+            z: 1.0,
+        }
+    }
+
+    pub fn xy(&self) -> Vec2
+    {
+        Vec2{
+            x: self.x,
+            y: self.y
+        }
+    }
+
+    pub fn xy_i(&self) -> Vec2i
+    {
+        Vec2i{
+            x: self.x.round() as i32,
+            y: self.y.round() as i32
+        }
+    }
+
 }
 
 #[derive(Clone, Copy, Debug)]
