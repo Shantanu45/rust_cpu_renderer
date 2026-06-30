@@ -1,4 +1,4 @@
-use crate::math::Vec2i;
+use crate::math::{Vec2, Vec2i};
 
 pub struct Line {
     pub vertices: [Vec2i; 2],
@@ -89,4 +89,12 @@ impl Quad {
             None
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct Vertex{
+    pub pos: Vec2,
+}
+struct Mesh{
+    pub vertices: Vec<Vertex>,
 }
