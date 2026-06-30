@@ -85,6 +85,14 @@ impl Vec2 {
     pub const fn new(x: f32, y: f32) -> Self {
         Self { x, y}
     }
+    
+    pub fn to_veci(&self) -> Vec2i
+    {
+        Vec2i{
+            x: self.x.round() as i32,
+            y: self.y.round() as i32
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -5,16 +5,17 @@ use crate::input::Input;
 use crate::math::{Vec2i, Vec2, Vec3, Mat3};
 use crate::renderer::Renderer;
 
-const SHIP_HEAD: Vec2 = Vec2{x: 0.0, y: 0.5};
-const SHIP_LEFT_WING: Vec2 = Vec2{x: -0.5, y: -0.5};
-const SHIP_RIGHT_WING: Vec2 = Vec2{x:0.5, y: -0.5};
-const SHIP_MID_SECTION: Vec2 = Vec2{x: 0.0, y: 0.25};
+const SHIP_HEAD: Vec2 = Vec2{x: 0.0, y: 1.0};
+const SHIP_LEFT_WING: Vec2 = Vec2{x: -1.0, y: -1.0};
+const SHIP_RIGHT_WING: Vec2 = Vec2{x: 1.0, y: -1.0};
+const SHIP_MID_SECTION: Vec2 = Vec2{x: 0.0, y: -0.5};
+
+const SHIP_SIZE: f32 = 20.0;
 
 #[derive(Default)]
 struct Ship {
     pos: Vec2i,
     forward: Vec2i,
-    size: u32,
     speed: u32,
 }
 
@@ -29,8 +30,8 @@ impl Asteroids {
         Self{
             ship: Ship::default(),
             model_mat: Mat3{
-                r1: [1.0 * 40.0, 0.0, -0.5],
-                r2: [0.0, -1.0 * 40.0, -0.5],
+                r1: [1.0 * SHIP_SIZE, 0.0, SHIP_SIZE],
+                r2: [0.0, -1.0 * SHIP_SIZE, SHIP_SIZE],
                 r3: [0.0, 0.0, 1.0],
             }
         }
@@ -63,9 +64,12 @@ impl Asteroids{
         let ship_mid_section = self.model_mat * Vec3::from_vec2_1(SHIP_MID_SECTION);
         renderer.draw_line_connected(vec![ship_head.xy_i(), ship_right_wing.xy_i(), ship_mid_section.xy_i(), ship_left_wing.xy_i()], true, Color::WHITE);
 
-/*        let flame_start = Vec2i{x: (SHIP_MID_SECTION.x - SHIP_LEFT_WING.x)/2, y: SHIP_MID_SECTION.y + 5 + (SHIP_LEFT_WING.y - SHIP_MID_SECTION.y)/2};
-        let flame_end = Vec2i{x: SHIP_MID_SECTION.x + (SHIP_RIGHT_WING.x - SHIP_MID_SECTION.x)/2, y: SHIP_MID_SECTION.y + 5 + (SHIP_RIGHT_WING.y - SHIP_MID_SECTION.y)/2};
-        let flame_vert_offset_x = (flame_end.x - flame_start.x)/3;
-        renderer.draw_line_connected(vec![flame_start, flame_start + Vec2i{x: flame_vert_offset_x, y: 5}, flame_start + Vec2i{x: flame_vert_offset_x*2, y: 5}, flame_end],false, Color::RED);*/
+        let flame_start = Vec2{x: (ship_mid_section.x - ship_left_wing.x)/2.0, y: ship_mid_section.y + 5.0 + (ship_left_wing.y - ship_mid_section.y)/2.0};
+        let flame_end = Vec2{x: ship_mid_section.x + (ship_right_wing.x - ship_mid_section.x)/2.0, y: ship_mid_section.y + 5.0 + (ship_right_wing.y - ship_mid_section.y)/2.0};
+        let flame_vert_offset_x = (flame_end.x - flame_start.x)/3.0;
+        renderer.draw_line_connected(vec![flame_start.to_veci(),
+                                          flame_start.to_veci() + Vec2i{x: flame_vert_offset_x.round() as i32, y: 5},
+                                          flame_start.to_veci() + Vec2i{x: (flame_vert_offset_x*2.0).round() as i32, y: 5},
+                                          flame_end.to_veci()],false, Color::RED);
     }
 }
