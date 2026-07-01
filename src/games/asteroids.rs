@@ -6,6 +6,7 @@ use crate::math::{Vec2i, Vec2, Vec3, Mat3};
 use crate::renderer::Renderer;
 use crate::util::{Mesh, Vertex};
 use std::sync::LazyLock;
+use crate::math;
 
 const SHIP_SIZE: f32 = 20.0;
 
@@ -56,27 +57,52 @@ pub struct Asteroids
 {
     ship: Ship,
     ship_model_mat: Mat3,
+    ship_rot: Mat3,
+    ship_scale: Mat3,
+    ship_translate: Mat3,
+    current_angle: f32,
 }
 
 impl Asteroids {
     pub fn new() -> Self{
-        let model_mat = Mat3{
+        let scale_mat = Mat3{
             r1: [1.0 * SHIP_SIZE, 0.0, 0.0],
             r2: [0.0, -1.0 * SHIP_SIZE, 0.0],
             r3: [0.0, 0.0, 1.0],
         };
         Self{
             ship: Ship::new(),
-            ship_model_mat: model_mat
+            ship_model_mat: Mat3::identity(),
+            ship_translate: Mat3::identity(),
+            ship_rot: Mat3::identity(),
+            ship_scale: scale_mat,
+            current_angle: 0.0,
         }
     }
 
     pub fn move_ship(&mut self, offset: Vec2i)
     {
-        let x = self.ship_model_mat.r1[2] + offset.x as f32;
-        let y = self.ship_model_mat.r2[2] + offset.y as f32;
-        self.ship_model_mat.r1[2] = x;
-        self.ship_model_mat.r2[2] = y;
+        let x = self.ship_translate.r1[2] + offset.x as f32;
+        let y = self.ship_translate.r2[2] + offset.y as f32;
+        let mut i = Mat3::identity();
+        i.r1[2] = x;
+        i.r2[2] = y;
+        self.ship_translate = i;
+    }
+
+    pub fn rotate_ship(&mut self, angle_offset: i32){
+        self.current_angle = self.current_angle + angle_offset as f32;
+        let cos_a = f32::cos(math::deg_to_pi(self.current_angle as f32));
+        let sin_a = f32::sin(math::deg_to_pi(self.current_angle as f32));
+
+        self.ship_rot.r1[0] = cos_a;
+        self.ship_rot.r1[1] = -sin_a;
+        self.ship_rot.r2[0] = sin_a;
+        self.ship_rot.r2[1] = cos_a;
+    }
+
+    pub fn update_model_matrix(&mut self){
+        self.ship_model_mat = self.ship_translate * self.ship_rot * self.ship_scale;
     }
 }
 
@@ -91,7 +117,9 @@ impl Game for Asteroids{
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
        // self.ship.translate(Vec2i{x: 1, y: 0});
+        self.rotate_ship(1);
         self.control_ship(input);
+        self.update_model_matrix();
         GameCommand::None
     }
 

@@ -142,6 +142,14 @@ pub struct Mat3 {
 
 impl Mat3{
     pub const fn new(r1: [f32;3], r2: [f32;3], r3: [f32;3]) -> Self{ Self{r1, r2, r3}}
+
+    pub const fn identity() -> Mat3{
+        Mat3{
+            r1: [1.0, 0.0, 0.0],
+            r2: [0.0, 1.0, 0.0],
+            r3: [0.0, 0.0, 1.0],
+        }
+    }
 }
 
 impl Mul<Mat3> for Mat3{
@@ -254,4 +262,12 @@ mod tests {
 
         assert_eq!(v, v_ref);
     }
+}
+
+pub fn deg_to_pi(val: f32) -> f32{
+    (std::f32::consts::PI/180.0)*val
+}
+
+pub fn pi_to_deg(val: f32) -> f32{
+    (180.0/std::f32::consts::PI)*val
 }
