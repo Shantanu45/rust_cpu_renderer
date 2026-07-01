@@ -92,9 +92,19 @@ impl Quad {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-struct Vertex{
+pub struct Vertex{
     pub pos: Vec2,
 }
-struct Mesh{
+
+#[derive(Debug, Clone, Default)]
+pub struct Mesh{
     pub vertices: Vec<Vertex>,
+}
+
+impl Mesh{
+    pub fn new() -> Self{
+        Self{
+            vertices: Vec::default()
+        }
+    }
 }
