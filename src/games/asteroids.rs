@@ -31,14 +31,14 @@ struct Ship {
     pos: Vec2i,
     mesh: &'static Mesh,
     forward: Vec2i,
-    speed: u32,
+    velocity: Vec2i,
 }
 impl Default for Ship {
     fn default() -> Self {
         Self {
             mesh: &SHIP_MESH,
             forward: Vec2i::default(),
-            speed: u32::default(),
+            velocity: Vec2i::default(),
             pos: Vec2i{x: 0, y: 0}
         }
     }
@@ -80,10 +80,10 @@ impl Asteroids {
         }
     }
 
-    pub fn move_ship(&mut self, offset: Vec2i)
+    pub fn move_ship(&mut self, offset: Vec2)
     {
-        let x = self.ship_translate.r1[2] + offset.x as f32;
-        let y = self.ship_translate.r2[2] + offset.y as f32;
+        let x = self.ship_translate.r1[2] + offset.x;
+        let y = self.ship_translate.r2[2] + offset.y;
         let mut i = Mat3::identity();
         i.r1[2] = x;
         i.r2[2] = y;
@@ -99,6 +99,8 @@ impl Asteroids {
         self.ship_rot.r1[1] = -sin_a;
         self.ship_rot.r2[0] = sin_a;
         self.ship_rot.r2[1] = cos_a;
+
+        self.ship.forward = Vec2i{x: sin_a as i32, y: cos_a as i32}
     }
 
     pub fn update_model_matrix(&mut self){
@@ -117,8 +119,8 @@ impl Game for Asteroids{
 
     fn update(&mut self, input: &Input, dt: f32, ctx: &GameContext) -> GameCommand {
        // self.ship.translate(Vec2i{x: 1, y: 0});
-        self.rotate_ship(1);
-        self.control_ship(input);
+        self.rotate_ship(0);
+        self.control_ship(dt, input);
         self.update_model_matrix();
         GameCommand::None
     }
@@ -129,19 +131,25 @@ impl Game for Asteroids{
 }
 
 impl Asteroids{
-    fn control_ship(&mut self, input: &Input){
+    fn control_ship(&mut self, dt: f32, input: &Input){
+        let mut offset: Vec2 = Vec2::default();
         if(input.left_down){
-            self.move_ship(Vec2i{x: 0, y: 1});
+            self.ship.velocity += Vec2i{x: 0, y: 1};
         }
         if (input.left_up){
-            self.move_ship(Vec2i{x: 0, y: -1});
+            self.ship.velocity += Vec2i{x: 0, y: -1};
         }
         if (input.left_left){
-            self.move_ship(Vec2i{x:-1 , y: 0});
+            self.ship.velocity += Vec2i{x: -1, y: 0};
         }
         if (input.left_right){
-            self.move_ship(Vec2i{x: 1, y: 0});
+            self.ship.velocity += Vec2i{x: 1, y: 0};
         }
+        const VEL_MUL: f32 = 4000.0;
+        offset.x = (self.ship.velocity.x as f32/(dt*VEL_MUL));
+        offset.y = (self.ship.velocity.y as f32/(dt*VEL_MUL));
+        self.move_ship(offset);
+
     }
     fn draw_ship(&self, renderer: &mut Renderer) {
 
